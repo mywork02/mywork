@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.PrintRecordMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.PrintRecord">
+		<id column="id" property="id"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+		<result column="actived" property="actived"/>
+		<result column="student_nick_name" property="studentNickName"/>
+		<result column="student_id" property="studentId"/>
+		<result column="student_document_id" property="studentDocumentId"/>
+		<result column="print_task_id" property="printTaskId"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, created_at, updated_at, actived, student_nick_name, student_id, student_document_id, print_task_id
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.PrintRecord" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_doc_print_record
+		(
+		created_at, updated_at, actived, student_nick_name, student_id, student_document_id, print_task_id
+		)
+		values
+		(
+		#{createdAt, jdbcType=TIMESTAMP}, #{updatedAt, jdbcType=TIMESTAMP}, #{actived, jdbcType=TINYINT}, #{studentNickName, jdbcType=VARCHAR}, 
+		#{studentId, jdbcType=BIGINT}, #{studentDocumentId, jdbcType=BIGINT}, #{printTaskId, jdbcType=BIGINT}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_doc_print_record t
+		WHERE t.id=#{id}
+		</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenku_doc_print_record<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+	<choose>
+		<when test="limit>0">
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenku_doc_print_record t
+			<include refid="sqlWhere" />
+			limit #{offset},#{limit}
+		</when>
+		<otherwise>
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenku_doc_print_record t
+			<include refid="sqlWhere" />
+		</otherwise>
+	</choose>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.PrintRecord">
+		update wenku_doc_print_record
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="studentNickName != null">
+				student_nick_name = #{studentNickName, jdbcType=VARCHAR},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="studentDocumentId != null">
+				student_document_id = #{studentDocumentId, jdbcType=BIGINT},
+			</if>
+			<if test="printTaskId != null">
+				print_task_id = #{printTaskId, jdbcType=BIGINT},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_doc_print_record where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+</mapper>

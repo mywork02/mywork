@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.SchoolNumberMapper">
+<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>
+	<resultMap id="resultMap" type="com.suime.context.model.SchoolNumber">
+		<id column="id" property="id"/>
+		<result column="school_id" property="schoolId"/>
+		<result column="number" property="number"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+	<sql id="sqlColumns">
+		id, name
+	</sql>
+	<select id="hotList" parameterType="java.util.Map" resultType="com.suime.library.dto.SchoolNumberDto">
+	select wsn.school_id as schoolId,ws.name as schoolName from wenji_school_number wsn 
+	left join wenji_school ws on wsn.school_id = ws.id
+	<!-- order by wsn.number desc limit 0,${limit} -->
+	order by sort asc limit 0,${limit}
+	</select>
+	
+	
+	<select id="hotdocList" parameterType="java.util.Map" resultType="com.suime.library.dto.SchoolNumberDto">
+	select wsn.school_id as schoolId,ws.name as schoolName,doc_number from wenji_school_number wsn 
+	left join wenji_school ws on wsn.school_id = ws.id
+	where doc_number>0
+	<!-- order by wsn.number desc limit ${offset},${limit} -->
+	order by sort asc limit ${offset},${limit}
+	</select>
+	
+	 <select id="hotdoccount" parameterType="java.util.Map" resultType="java.lang.Integer">
+     select count(1) from wenji_school_number wsn 
+	left join wenji_school ws on wsn.school_id = ws.id
+	where doc_number>0
+    </select>
+</mapper>

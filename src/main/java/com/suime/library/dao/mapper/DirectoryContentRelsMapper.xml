@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.DirectoryContentRelsMapper">
+	<cache flushInterval="300000" size="512"
+		type="org.mybatis.caches.memcached.MemcachedCache" />
+
+	<resultMap id="resultMap" type="com.suime.context.model.DirectoryContentRels">
+		<id column="id" property="id" />
+		<result column="student_id" property="studentId" />
+		<result column="directory_id" property="directoryId" />
+		<result column="associated_id" property="associatedId" />
+		<result column="associated_name" property="associatedName" />
+		<result column="extension" property="extension" />
+		<result column="type" property="type" />
+		<result column="actived" property="actived" />
+		<result column="created_at" property="createdAt" />
+		<result column="updated_at" property="updatedAt" />
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND
+						#{cond.endValue}
+					</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">
+						${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value"
+							open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, student_id, directory_id, associated_id,
+		associated_name, extension, type, actived, created_at, updated_at
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.DirectoryContentRels"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into
+		wenku_directory_content_rels
+		(
+		student_id, directory_id, associated_id,
+		associated_name, extension, type, actived, created_at, updated_at
+		)
+		values
+		(
+		#{studentId, jdbcType=BIGINT}, #{directoryId, jdbcType=BIGINT},
+		#{associatedId, jdbcType=BIGINT}, #{associatedName, jdbcType=VARCHAR},
+		#{extension, jdbcType=VARCHAR}, #{type, jdbcType=TINYINT}, #{actived,
+		jdbcType=TINYINT}, #{createdAt, jdbcType=TIMESTAMP},
+		#{updatedAt,
+		jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT
+		<include refid="sqlColumns" />
+		FROM wenku_directory_content_rels t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM wenku_directory_content_rels
+		<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map"
+		resultMap="resultMap">
+		SELECT
+		<include refid="sqlColumns" />
+		FROM wenku_directory_content_rels t
+		<include refid="sqlWhere" />
+		<if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+	
+	<select id="countIntro" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM wenku_directory_content_rels t
+		<include refid="sqlWhere" />
+	</select>
+
+
+	<select id="fetchSearchByPageIntro" parameterType="java.util.Map" resultType="com.suime.library.dto.DirectoryContentDto">
+		SELECT t.id, t.student_id AS studentId, t.directory_id AS directoryId, t.associated_id AS associatedId, t.associated_name AS associatedName, t.extension, 
+		t.type, t.actived, t.created_at AS createdAt, t.updated_at AS updatedAt,(CASE t.type WHEN '2' THEN IFNULL(intro,'') ELSE '' END) intro
+		FROM wenku_directory_content_rels t
+		LEFT JOIN wenku_doc_directory w ON t.type = '2'
+		AND t.associated_id = w.id
+		<include refid="sqlWhere" />
+		<if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.DirectoryContentRels">
+		update wenku_directory_content_rels
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="directoryId != null">
+				directory_id = #{directoryId, jdbcType=BIGINT},
+			</if>
+			<if test="associatedId != null">
+				associated_id = #{associatedId, jdbcType=BIGINT},
+			</if>
+			<if test="associatedName != null">
+				associated_name = #{associatedName, jdbcType=VARCHAR},
+			</if>
+			<if test="extension != null">
+				extension = #{extension, jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				type = #{type, jdbcType=TINYINT},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from
+		wenku_directory_content_rels where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+	<insert id="saveBatch" parameterType="java.util.List">
+		insert into wenku_directory_content_rels
+		(student_id, directory_id,
+		associated_id, associated_name, extension, type, actived, created_at,
+		updated_at)
+		values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(
+			#{item.studentId},#{item.directoryId},#{item.associatedId},#{item.associatedName},#{item.extension},#{item.type},#{item.actived},now(),now()
+			)
+		</foreach>
+	</insert>
+
+	<update id="removeBatch" parameterType="java.util.Map">
+		UPDATE wenku_directory_content_rels
+		SET actived=0
+		<include refid="sqlWhere" />
+	</update>
+
+	<update id="updateBatch" parameterType="java.util.Map">
+		UPDATE wenku_directory_content_rels
+		SET directory_id=#{directoryId}
+		<include refid="sqlWhere" />
+	</update>
+</mapper>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.PrintTaskMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.PrintTask">
+		<id column="id" property="id"/>
+		<result column="student_id" property="studentId"/>
+		<result column="visitor_id" property="visitorId"/>
+		<result column="filelink_id" property="filelinkId"/>
+		<result column="file_key" property="fileKey"/>
+		<result column="file_name" property="fileName"/>
+		<result column="print_order_id" property="printOrderId"/>
+		<result column="printshop_id" property="printshopId"/>
+		<result column="printer_id" property="printerId"/>
+		<result column="bothside" property="bothside"/>
+		<result column="colorful" property="colorful"/>
+		<result column="copies" property="copies"/>
+		<result column="handouts" property="handouts"/>
+		<result column="start_page" property="startPage"/>
+		<result column="count_page" property="countPage"/>
+		<result column="pages" property="pages"/>
+		<result column="pages_adjusted" property="pagesAdjusted"/>
+		<result column="price_for_shop" property="priceForShop"/>
+		<result column="state" property="state"/>
+		<result column="downloaded_at" property="downloadedAt"/>
+		<result column="printed_at" property="printedAt"/>
+		<result column="last_printed_at" property="lastPrintedAt"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+		<result column="deleted_at" property="deletedAt"/>
+		<result column="lib" property="lib"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, student_id, visitor_id, filelink_id, file_key, file_name, print_order_id, printshop_id, printer_id, bothside, colorful, copies, handouts, start_page, count_page, pages, pages_adjusted, price_for_shop, state, downloaded_at, printed_at, last_printed_at, created_at, updated_at, deleted_at, lib
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.PrintTask" useGeneratedKeys="true" keyProperty="id">
+		insert into wenji_print_task
+		(
+		student_id, visitor_id, filelink_id, file_key, file_name, print_order_id, printshop_id, printer_id, bothside, colorful, copies, handouts, start_page, count_page, pages, pages_adjusted, price_for_shop, state, downloaded_at, printed_at, last_printed_at, created_at, updated_at, deleted_at, lib
+		)
+		values
+		(
+		#{studentId, jdbcType=BIGINT}, #{visitorId, jdbcType=VARCHAR}, #{filelinkId, jdbcType=BIGINT}, #{fileKey, jdbcType=VARCHAR}, 
+		#{fileName, jdbcType=VARCHAR}, #{printOrderId, jdbcType=BIGINT}, #{printshopId, jdbcType=BIGINT}, #{printerId, jdbcType=INTEGER}, 
+		#{bothside, jdbcType=TINYINT}, #{colorful, jdbcType=TINYINT}, #{copies, jdbcType=INTEGER}, #{handouts, jdbcType=VARCHAR}, 
+		#{startPage, jdbcType=INTEGER}, #{countPage, jdbcType=INTEGER}, #{pages, jdbcType=INTEGER}, #{pagesAdjusted, jdbcType=INTEGER}, 
+		#{priceForShop, jdbcType=INTEGER}, #{state, jdbcType=INTEGER}, #{downloadedAt, jdbcType=TIMESTAMP}, #{printedAt, jdbcType=TIMESTAMP}, 
+		#{lastPrintedAt, jdbcType=TIMESTAMP}, #{createdAt, jdbcType=TIMESTAMP}, #{updatedAt, jdbcType=TIMESTAMP}, #{deletedAt, jdbcType=TIMESTAMP}, 
+		#{lib, jdbcType=TINYINT}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenji_print_task t
+		WHERE t.id=#{id}
+		</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenji_print_task t <include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+	<choose>
+		<when test="limit>0">
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenji_print_task t
+			<include refid="sqlWhere" />
+			limit #{offset},#{limit}
+		</when>
+		<otherwise>
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenji_print_task t
+			<include refid="sqlWhere" />
+		</otherwise>
+	</choose>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.PrintTask">
+		update wenji_print_task
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="visitorId != null">
+				visitor_id = #{visitorId, jdbcType=VARCHAR},
+			</if>
+			<if test="filelinkId != null">
+				filelink_id = #{filelinkId, jdbcType=BIGINT},
+			</if>
+			<if test="fileKey != null">
+				file_key = #{fileKey, jdbcType=VARCHAR},
+			</if>
+			<if test="fileName != null">
+				file_name = #{fileName, jdbcType=VARCHAR},
+			</if>
+			<if test="printOrderId != null">
+				print_order_id = #{printOrderId, jdbcType=BIGINT},
+			</if>
+			<if test="printshopId != null">
+				printshop_id = #{printshopId, jdbcType=BIGINT},
+			</if>
+			<if test="printerId != null">
+				printer_id = #{printerId, jdbcType=INTEGER},
+			</if>
+			<if test="bothside != null">
+				bothside = #{bothside, jdbcType=TINYINT},
+			</if>
+			<if test="colorful != null">
+				colorful = #{colorful, jdbcType=TINYINT},
+			</if>
+			<if test="copies != null">
+				copies = #{copies, jdbcType=INTEGER},
+			</if>
+			<if test="handouts != null">
+				handouts = #{handouts, jdbcType=VARCHAR},
+			</if>
+			<if test="startPage != null">
+				start_page = #{startPage, jdbcType=INTEGER},
+			</if>
+			<if test="countPage != null">
+				count_page = #{countPage, jdbcType=INTEGER},
+			</if>
+			<if test="pages != null">
+				pages = #{pages, jdbcType=INTEGER},
+			</if>
+			<if test="pagesAdjusted != null">
+				pages_adjusted = #{pagesAdjusted, jdbcType=INTEGER},
+			</if>
+			<if test="priceForShop != null">
+				price_for_shop = #{priceForShop, jdbcType=INTEGER},
+			</if>
+			<if test="state != null">
+				state = #{state, jdbcType=INTEGER},
+			</if>
+			<if test="downloadedAt != null">
+				downloaded_at = #{downloadedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="printedAt != null">
+				printed_at = #{printedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="lastPrintedAt != null">
+				last_printed_at = #{lastPrintedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedAt != null">
+				deleted_at = #{deletedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="lib != null">
+				lib = #{lib, jdbcType=TINYINT},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenji_print_task where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+</mapper>

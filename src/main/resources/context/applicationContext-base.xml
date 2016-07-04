@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath*:conf/*.properties</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="propertyConfigurer" class="com.confucian.framework.config.PropertyPlaceholderConfigurer">
+        <property name="properties" ref="configProperties"/>
+    </bean>
+
+
+    <!-- i18n Resource bundles -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>i18n/messages</value>
+                <value>i18n/errors</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="springContext" class="com.confucian.framework.ioc.SpringContext" depends-on="propertyConfigurer"/>
+
+    <bean id="searchIndexLoader" class="com.suime.library.listener.SearchIndexLoader" />
+
+    <import resource="applicationContext-cache-${application.cache.source}.xml"/>
+    <import resource="applicationContext-db.xml"/>
+    <import resource="applicationContext-remote.xml"/>
+    <import resource="applicationContext-rest.xml"/>
+    <import resource="applicationContext-service.xml"/>
+    <import resource="applicationContext-servlet.xml"/>
+
+</beans>

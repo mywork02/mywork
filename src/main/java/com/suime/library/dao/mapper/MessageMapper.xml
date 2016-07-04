@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.MessageMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.Message">
+		<id column="id" property="id"/>
+		<result column="sender_id" property="senderId"/>
+		<result column="receiver_id" property="receiverId"/>
+		<result column="student_document_id" property="studentDocumentId"/>
+		<result column="student_document_name" property="studentDocumentName"/>
+		<result column="content" property="content"/>
+		<result column="related_id" property="relatedId"/>
+		<result column="message_type" property="messageType"/>
+		<result column="type" property="type"/>
+		<result column="extra" property="extra"/>
+		<result column="extra_key" property="extraKey"/>
+		<result column="is_readed" property="isReaded"/>
+		<result column="actived" property="actived"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, sender_id, receiver_id, student_document_id, student_document_name, content, related_id, message_type, type, extra, extra_key, is_readed, actived, created_at, updated_at
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.Message" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_message
+		(
+		sender_id, receiver_id, student_document_id, student_document_name, content, related_id, message_type, type, extra, extra_key, is_readed, actived, created_at, updated_at
+		)
+		values
+		(
+		#{senderId, jdbcType=BIGINT}, #{receiverId, jdbcType=BIGINT}, #{studentDocumentId, jdbcType=BIGINT}, #{studentDocumentName, jdbcType=VARCHAR}, #{content, jdbcType=VARCHAR},
+		#{relatedId, jdbcType=BIGINT}, #{messageType, jdbcType=TINYINT}, #{type, jdbcType=VARCHAR}, #{extra, jdbcType=VARCHAR}, 
+		#{extraKey, jdbcType=VARCHAR}, #{isReaded, jdbcType=TINYINT}, #{actived, jdbcType=TINYINT}, #{createdAt, jdbcType=TIMESTAMP}, 
+		#{updatedAt, jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_message t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenku_message <include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+	<choose>
+		<when test="limit>0">
+			SELECT <include refid="sqlColumns" />
+			FROM wenku_message t
+			<include refid="sqlWhere" />
+			limit #{offset},#{limit}
+		</when>
+		<otherwise>
+			SELECT <include refid="sqlColumns" />
+			FROM wenku_message t
+			<include refid="sqlWhere" />
+		</otherwise>
+	</choose>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.Message">
+		update wenku_message
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="senderId != null">
+				sender_id = #{senderId, jdbcType=BIGINT},
+			</if>
+			<if test="receiverId != null">
+				receiver_id = #{receiverId, jdbcType=BIGINT},
+			</if>
+			<if test="studentDocumentId != null">
+				student_document_id = #{studentDocumentId, jdbcType=BIGINT},
+			</if>
+			<if test="studentDocumentName != null">
+				student_document_name = #{studentDocumentName, jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				content = #{content, jdbcType=VARCHAR},
+			</if>
+			<if test="relatedId != null">
+				related_id = #{relatedId, jdbcType=BIGINT},
+			</if>
+			<if test="messageType != null">
+				message_type = #{messageType, jdbcType=TINYINT},
+			</if>
+			<if test="type != null">
+				type = #{type, jdbcType=VARCHAR},
+			</if>
+			<if test="extra != null">
+				extra = #{extra, jdbcType=VARCHAR},
+			</if>
+			<if test="extraKey != null">
+				extra_key = #{extraKey, jdbcType=VARCHAR},
+			</if>
+			<if test="isReaded != null">
+				is_readed = #{isReaded, jdbcType=TINYINT},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_message where id=#{id,jdbcType=BIGINT}
+	</delete>
+	<resultMap id="resultDtoMap" type="com.suime.library.dto.MessageDto">
+		<id column="id" property="id"/>
+		<result column="sender_id" property="senderId"/>
+		<result column="receiver_id" property="receiverId"/>
+		<result column="student_document_id" property="studentDocumentId"/>
+		<result column="content" property="content"/>
+		<result column="related_id" property="relatedId"/>
+		<result column="message_type" property="messageType"/>
+		<result column="type" property="type"/>
+		<result column="extra" property="extra"/>
+		<result column="extra_key" property="extraKey"/>
+		<result column="is_readed" property="isReaded"/>
+		<result column="actived" property="actived"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+		<result column="commentContent" property="commentContent"/>
+		<result column="commentActived" property="commentActived"/>
+		<result column="student_document_name" property="studentDocumentName"/>
+
+		<!-- 映射关联的对象 -->
+		<association property="sender" javaType="com.suime.library.dto.StudentDto">
+			<id column="sender_id" property="id"/>
+			<result column="senderNickName" property="nickName"/>
+			<result column="senderAvatar" property="avatar"/>
+		</association>
+
+	</resultMap>
+
+	<select id="fetchDtoSearchByPage" parameterType="java.util.Map" resultMap="resultDtoMap">
+		SELECT t.id,t.sender_id, t.receiver_id, t.student_document_id, t.content,t.related_id, t.message_type, t.type, t.extra, t.extra_key,
+		t.is_readed, t.actived, t.created_at,t.updated_at, student.nick_name AS senderNickName, student.avatar AS senderAvatar,
+		wdc.content AS commentContent, wdc.actived AS commentActived, t.student_document_name
+		FROM wenku_message t
+		LEFT JOIN wenji_student student ON student.id=t.sender_id
+		LEFT JOIN wenku_doc_comment wdc ON wdc.id=t.related_id AND (t.message_type=6 OR t.message_type=7)
+		<include refid="sqlWhere" />
+		ORDER BY t.created_at DESC
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+	<update id="readAllByReceiverId" parameterType="java.lang.Integer">
+		update wenku_message
+		<set>
+            is_readed = 1,
+            updated_at = now(),
+		</set>
+		where receiver_id=#{receiverId,jdbcType=BIGINT} AND is_readed =0 AND actived=1
+	</update>
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.DocRecommendMapper">
+    <cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>
+
+    <resultMap id="resultMap" type="com.suime.context.model.DocRecommend">
+        <id column="id" property="id"/>
+        <result column="doc_ids" property="docIds"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="sqlWhere">
+        <if test="conds!=null">
+            <trim prefix="WHERE" prefixOverrides="AND|OR">
+                <foreach collection="conds.conds" index="index" item="cond">
+                    ${cond.linkType}
+                    <if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+                    <if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+                    <if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+                    <if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+                    <if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+                    <if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+                    <if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND
+                        #{cond.endValue}
+                    </if>
+                    <if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+                    <if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+                    <if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+                    <if test="cond.condType == 'IN'">${cond.param} IN
+                        <foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sqlColumns">
+		id, doc_ids, created_at, updated_at
+	</sql>
+
+    <select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+        SELECT
+        <include refid="sqlColumns"/>
+        FROM wenku_doc_recommend t
+        WHERE t.id=#{id}
+    </select>
+
+    <select id="fetchRecommendIds" parameterType="java.util.Map" resultType="java.lang.Long">
+		SELECT stdoc_id stdocId FROM wenku_stdoc_tag_rels d
+		INNER JOIN wenku_user_tag_rels u USING (tag_id)
+		WHERE user_id=#{userId} AND stdoc_id IN (${documentIds})
+		GROUP BY stdoc_id
+		ORDER BY SUM(d.relevancy * u.relevancy) / IF(d.rel_sum > 25, d.rel_sum, 25)
+		DESC LIMIT #{limit}
+	</select>
+
+    <select id="fetchStDocDtoSearch" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id id, sd.name name, sd.price price, file.page_Count pageCount, sd.mark_Count markCount,
+        sd.comment_Count commentCount,sd.print_Count printCount, sd.read_Count readCount,sd.ratings ratings,
+        sd.rating_Count ratingCount, file.id fileId, sd.file_Key fileKey , sd.file_Name fileName,
+        sd.created_At createdAt, sd.updated_At AS updatedAt, sd.review_state AS reviewState
+        FROM wenku_student_document sd
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        <include refid="sqlWhere"/>
+        <!--<if test="ids != null and ids.size() > 0">-->
+            <!--sd.id IN-->
+            <!--<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">-->
+                <!--#{item}-->
+            <!--</foreach>-->
+        <!--</if>-->
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+</mapper>

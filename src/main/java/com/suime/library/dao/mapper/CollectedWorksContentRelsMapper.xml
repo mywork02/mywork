@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.CollectedWorksContentRelsMapper">
+	<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache" />
+
+	<resultMap id="resultMap" type="com.suime.context.model.CollectedWorksContentRels">
+		<id column="id" property="id"/>
+		<result column="student_id" property="studentId"/>
+		<result column="collected_works_id" property="collectedWorksId"/>
+		<result column="associated_id" property="associatedId"/>
+		<result column="associated_name" property="associatedName"/>
+		<result column="extension" property="extension"/>
+		<result column="type" property="type"/>
+		<result column="actived" property="actived"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, student_id, collected_works_id, associated_id, associated_name, extension, type, actived, created_at, updated_at
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.CollectedWorksContentRels" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_collected_works_content_rels
+		(
+		student_id, collected_works_id, associated_id, associated_name, extension, type, actived, created_at, updated_at
+		)
+		values
+		(
+		#{studentId, jdbcType=BIGINT}, #{collectedWorksId, jdbcType=BIGINT}, #{associatedId, jdbcType=BIGINT}, #{associatedName, jdbcType=VARCHAR}, 
+		#{extension, jdbcType=VARCHAR}, #{type, jdbcType=TINYINT}, #{actived, jdbcType=TINYINT}, #{createdAt, jdbcType=TIMESTAMP}, 
+		#{updatedAt, jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_collected_works_content_rels t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenku_collected_works_content_rels<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> 
+		FROM wenku_collected_works_content_rels t
+		<include refid="sqlWhere" />
+		<if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.CollectedWorksContentRels">
+		update wenku_collected_works_content_rels
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="collectedWorksId != null">
+				collected_works_id = #{collectedWorksId, jdbcType=BIGINT},
+			</if>
+			<if test="associatedId != null">
+				associated_id = #{associatedId, jdbcType=BIGINT},
+			</if>
+			<if test="associatedName != null">
+				associated_name = #{associatedName, jdbcType=VARCHAR},
+			</if>
+			<if test="extension != null">
+				extension = #{extension, jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				type = #{type, jdbcType=TINYINT},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_collected_works_content_rels where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+</mapper>

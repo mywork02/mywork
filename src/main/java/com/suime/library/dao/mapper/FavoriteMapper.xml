@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.FavoriteMapper">
+    <!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache" />-->
+
+    <resultMap id="resultMap" type="com.suime.context.model.Favorite">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="intro" property="intro"/>
+		<result column="student_id" property="studentId"/>
+		<result column="student_name" property="studentName"/>
+		<result column="document_count" property="documentCount"/>
+		<result column="concern_count" property="concernCount"/>
+		<result column="actived" property="actived"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="sqlWhere">
+        <if test="conds!=null">
+            <trim prefix="WHERE" prefixOverrides="AND|OR">
+                <foreach collection="conds.conds" index="index" item="cond">
+                    ${cond.linkType}
+                    <if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+                    <if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+                    <if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+                    <if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+                    <if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+                    <if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+                    <if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND
+                        #{cond.endValue}
+                    </if>
+                    <if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+                    <if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+                    <if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+                    <if test="cond.condType == 'IN'">${cond.param} IN
+                        <foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sqlColumns">
+		id, name, intro, student_id, student_name, document_count, concern_count, actived, created_at, updated_at
+	</sql>
+
+    <insert id="save" parameterType="com.suime.context.model.Favorite" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_doc_favorite
+		(
+		name, intro, student_id, student_name, document_count, concern_count, actived, created_at, updated_at
+		)
+		values
+		(
+		#{name, jdbcType=VARCHAR}, #{intro, jdbcType=VARCHAR}, #{studentId, jdbcType=BIGINT}, #{studentName, jdbcType=VARCHAR}, 
+		#{documentCount, jdbcType=INTEGER}, #{concernCount, jdbcType=INTEGER}, #{actived, jdbcType=TINYINT}, #{createdAt, jdbcType=TIMESTAMP}, 
+		#{updatedAt, jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+    <select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+        SELECT
+        <include refid="sqlColumns"/>
+        FROM wenku_doc_favorite t
+        WHERE t.id=#{id}
+    </select>
+
+    <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM wenku_doc_favorite
+        <include refid="sqlWhere"/>
+    </select>
+
+    <select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT <include refid="sqlColumns" /> 
+		FROM wenku_doc_favorite t
+		<include refid="sqlWhere" />
+		<if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+    <update id="update" parameterType="com.suime.context.model.Favorite">
+        update wenku_doc_favorite
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>
+			<if test="intro != null">
+				intro = #{intro, jdbcType=VARCHAR},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="studentName != null">
+				student_name = #{studentName, jdbcType=VARCHAR},
+			</if>
+			<if test="documentCount != null">
+				document_count = #{documentCount, jdbcType=INTEGER},
+			</if>
+			<if test="concernCount != null">
+				concern_count = #{concernCount, jdbcType=INTEGER},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long" >
+		delete from wenku_doc_favorite where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+    <select id="fetchDtoByItem" parameterType="java.util.Map" resultType="com.suime.library.dto.FavoriteDto">
+        SELECT id as id , created_at as createdAt , updated_at as updatedAt , name as name, intro,student_name as studentName,document_count as documentCount,concern_count as concernCount
+        FROM wenku_doc_favorite
+        <include refid="sqlWhere"/>
+        <if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+    <select id="fetchDtoCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM wenku_doc_favorite
+        <include refid="sqlWhere"/>
+    </select>
+
+    <update id="removeInFavorite" parameterType="java.lang.Long">
+        UPDATE wenku_doc_mark_record mr
+        LEFT JOIN wenku_student_document sd ON mr.student_document_id = sd.id
+        SET mr.actived = 0,sd.mark_count=sd.mark_count-1
+        WHERE mr.actived = 1 and mr.favorite_id=#{id}
+    </update>
+	<!--获取收藏夹下面的文档数量-->
+	<select id="fetchCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+		select count(1)
+		from wenku_doc_favorite_document wdfd
+		left JOIN wenku_student_document wsd on wsd.id=wdfd.document_id
+		where wdfd.favorite_id = #{id}
+	</select>
+	<!--获取收藏夹下面的文档列表-->
+	<select id="fetchfavoritedoc" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+		SELECT wsd.id AS id, wsd.document_id AS documentId, wsd.name AS name, TRIM(BOTH ',' FROM wsd.tags) AS tags,
+        wsd.review_state AS reviewState, wsd.file_key AS fileKey, wsd.ratings AS ratings, wsd.rating_count AS ratingCount,
+        wsd.mark_count AS markCount,
+        wsd.read_count AS readCount, wsd.print_count AS printCount,wsd.student_id AS
+        studentId,wsd.created_at AS createdAt, wsd.updated_at AS updatedAt,
+		(select max(created_at) createdAt from wenku_doc_read_record where student_document_id=wsd.id and student_id = #{studentId}) as pastReadedAt
+		from wenku_doc_favorite_document wdfd
+		left JOIN wenku_student_document wsd on wsd.id=wdfd.document_id
+		where wdfd.favorite_id = #{favoriteId}
+		limit #{offset},#{limit}
+	</select>
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="studentPointRemoteService" class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean">
+        <property name="serviceUrl" value="${spring.remote.url.user}/remote/studentPointService"/>
+        <property name="serviceInterface" value="me.sui.user.remote.service.StudentPointRemoteService"/>
+        <!--
+        <property name="httpInvokerRequestExecutor" value="com.suime.test.remote.support.MyHttpInvokerRequestExecutor"/>
+        -->
+
+        <!--
+            org.springframework.remoting.httpinvoker.SimpleHttpInvokerRequestExecutor
+        <property name="httpInvokerRequestExecutor">
+            <bean class="com.suime.test.remote.support.MyHttpInvokerRequestExecutor"/>
+        </property>
+        -->
+    </bean>
+
+</beans>

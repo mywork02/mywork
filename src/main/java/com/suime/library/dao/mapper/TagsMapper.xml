@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.TagsMapper">
+    <!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.LoggingMemcachedCache"/>-->
+
+    <resultMap id="resultMap" type="com.suime.context.model.Tags">
+        <id column="id" property="id"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="actived" property="actived"/>
+        <result column="source" property="source"/>
+        <result column="text" property="text"/>
+        <result column="type" property="type"/>
+        <result column="use_count" property="useCount"/>
+        <result column="user_id" property="userId"/>
+        <result column="photo_url" property="photoUrl"/>
+    </resultMap>
+
+    <sql id="sqlWhere">
+        <if test="conds!=null">
+            <trim prefix="WHERE" prefixOverrides="AND|OR">
+                <foreach collection="conds.conds" index="index" item="cond">
+                    ${cond.linkType}
+                    <if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+                    <if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+                    <if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+                    <if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+                    <if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+                    <if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+                    <if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND
+                        #{cond.endValue}
+                    </if>
+                    <if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+                    <if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+                    <if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+                    <if test="cond.condType == 'IN'">${cond.param} IN
+                        <foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sqlColumns">
+        id, created_at, updated_at, actived, source, text, type, use_count, user_id, photo_url
+    </sql>
+
+    <insert id="save" parameterType="com.suime.context.model.Tags" useGeneratedKeys="true" keyProperty="id">
+        insert into wenku_doc_tags
+        (
+        created_at, updated_at, actived, source, text, type, use_count, user_id, photo_url
+        )
+        values
+        (
+        #{createdAt, jdbcType=TIMESTAMP}, #{updatedAt, jdbcType=TIMESTAMP}, #{actived, jdbcType=TINYINT}, #{source, jdbcType=TINYINT},
+        #{text, jdbcType=VARCHAR}, #{type, jdbcType=TINYINT}, #{useCount, jdbcType=INTEGER}, #{userId, jdbcType=BIGINT},
+        #{photoUrl, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+        SELECT
+        <include refid="sqlColumns"/>
+        FROM wenku_doc_tags t
+        WHERE t.id=#{id}
+    </select>
+
+    <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM wenku_doc_tags
+        <include refid="sqlWhere"/>
+    </select>
+
+    <select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+        <choose>
+            <when test="limit>0">
+                SELECT
+                <include refid="sqlColumns"/>
+                FROM wenku_doc_tags t
+                <include refid="sqlWhere"/>
+                limit #{offset},#{limit}
+            </when>
+            <otherwise>
+                SELECT
+                <include refid="sqlColumns"/>
+                FROM wenku_doc_tags t
+                <include refid="sqlWhere"/>
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="update" parameterType="com.suime.context.model.Tags">
+        update wenku_doc_tags
+        <set>
+            <if test="id != null">
+                id = #{id, jdbcType=BIGINT},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt, jdbcType=TIMESTAMP},
+            </if>
+            <if test="updatedAt != null">
+                updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+            </if>
+            <if test="actived != null">
+                actived = #{actived, jdbcType=TINYINT},
+            </if>
+            <if test="source != null">
+                source = #{source, jdbcType=TINYINT},
+            </if>
+            <if test="text != null">
+                text = #{text, jdbcType=VARCHAR},
+            </if>
+            <if test="type != null">
+                type = #{type, jdbcType=TINYINT},
+            </if>
+            <if test="useCount != null">
+                use_count = #{useCount, jdbcType=INTEGER},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId, jdbcType=BIGINT},
+            </if>
+            <if test="photoUrl != null">
+                photo_url = #{photoUrl, jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from wenku_doc_tags where id=#{id,jdbcType=BIGINT}
+    </delete>
+
+    <select id="fetchDtoSearchByPage" parameterType="java.util.Map" resultType="com.suime.library.dto.TagsDto">
+        <choose>
+            <when test="limit>0">
+                SELECT id AS id, created_at AS createdAt, updated_at AS updatedAt, actived AS actived,
+                source AS source, text AS text, use_count AS useCount, user_id AS userId, photo_url AS photoUrl
+                FROM wenku_doc_tags t
+                <include refid="sqlWhere"/>
+                limit #{offset},#{limit}
+            </when>
+            <otherwise>
+                SELECT id AS id, created_at AS createdAt, updated_at AS updatedAt, actived AS actived,
+                source AS source, text AS text, use_count AS useCount, user_id AS userId, photo_url AS photoUrl
+                FROM wenku_doc_tags t
+                <include refid="sqlWhere"/>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="fetchDto" parameterType="java.util.Map" resultType="com.suime.library.dto.TagsDto">
+        <choose>
+            <when test="limit>0">
+                SELECT id AS id, source AS source, text AS text, use_count AS useCount, photo_url AS photoUrl
+                FROM wenku_doc_tags t
+                <include refid="sqlWhere"/>
+                limit #{offset},#{limit}
+            </when>
+            <otherwise>
+                SELECT id AS id, source AS source, text AS text, use_count AS useCount, photo_url AS photoUrl
+                FROM wenku_doc_tags t
+                <include refid="sqlWhere"/>
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updateUseCount" parameterType="java.util.Map">
+        update wenku_doc_tags SET use_count=use_count+#{value} WHERE id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="fetchDtoByDocStudent" parameterType="java.util.Map" resultType="com.suime.library.dto.TagsDto">
+        SELECT id AS id, source AS source, text AS text, use_count AS useCount, photo_url AS photoUrl
+        FROM wenku_doc_tags t
+        where t.actived=1 and t.type=1 and t.id in (
+          select tag_id from wenku_stdoc_tag_rels where student_id=#{studentId}
+        )ORDER By use_count desc
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+    
+    <select id = "fetchDtoByDissertation" resultType="com.suime.library.dto.TagsDto">
+    SELECT id,text FROM wenku_doc_tags t where type = 3
+    </select>
+
+</mapper>

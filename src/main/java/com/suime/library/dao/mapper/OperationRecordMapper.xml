@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.OperationRecordMapper">
+	<cache flushInterval="300000" size="512"
+		type="org.mybatis.caches.memcached.MemcachedCache" />
+
+	<resultMap id="resultMap" type="com.suime.context.model.OperationRecord">
+		<id column="id" property="id" />
+		<result column="student_id" property="studentId" />
+		<result column="associated_id" property="associatedId" />
+		<result column="student_document_id" property="studentDocumentId" />
+		<result column="data_type" property="dataType" />
+		<result column="operate_type" property="operateType" />
+		<result column="data" property="data" />
+		<result column="actived" property="actived" />
+		<result column="created_at" property="createdAt" />
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND
+						#{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">
+						${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value"
+							open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, student_id, associated_id, student_document_id,
+		data_type, operate_type, data, actived, created_at
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.OperationRecord"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into
+		wenku_doc_operation_record
+		(
+		student_id, associated_id,
+		student_document_id, data_type, operate_type, data, actived,
+		created_at
+		)
+		values
+		(
+		#{studentId, jdbcType=BIGINT}, #{associatedId,
+		jdbcType=BIGINT}, #{studentDocumentId, jdbcType=BIGINT}, #{dataType,
+		jdbcType=TINYINT},
+		#{operateType, jdbcType=TINYINT}, #{data, jdbcType=VARCHAR}, #{actived,
+		jdbcType=TINYINT}, #{createdAt, jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT
+		<include refid="sqlColumns" />
+		FROM wenku_doc_operation_record t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM wenku_doc_operation_record
+		<include refid="sqlWhere" />
+	</select>
+
+
+	<select id="recentOperationCount" parameterType="java.util.Map"
+		resultType="java.lang.Integer">
+		select count(1) from (SELECT
+		*
+		FROM
+		(
+		SELECT
+		sd.id AS id,
+		operation.created_at AS operatedAt
+		FROM
+		wenku_doc_operation_record operation
+		JOIN wenku_student_document sd ON
+		operation.student_document_id = sd.id
+		AND operation.data_type = 1
+		LEFT
+		JOIN wenji_file file ON file.id = sd.file_id
+		WHERE
+		sd.student_id =#{studentId}
+		AND sd.actived = 1
+		ORDER BY
+		operation.created_at DESC
+		) AS doc
+		GROUP BY
+		id
+		ORDER BY
+		operatedAt DESC
+		) s
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map"
+		resultMap="resultMap">
+		SELECT
+		<include refid="sqlColumns" />
+		FROM wenku_doc_operation_record t
+		<include refid="sqlWhere" />
+		<if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.OperationRecord">
+		update wenku_doc_operation_record
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="associatedId != null">
+				associated_id = #{associatedId, jdbcType=BIGINT},
+			</if>
+			<if test="studentDocumentId != null">
+				student_document_id = #{studentDocumentId,
+				jdbcType=BIGINT},
+			</if>
+			<if test="dataType != null">
+				data_type = #{dataType, jdbcType=TINYINT},
+			</if>
+			<if test="operateType != null">
+				operate_type = #{operateType, jdbcType=TINYINT},
+			</if>
+			<if test="data != null">
+				data = #{data, jdbcType=VARCHAR},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from
+		wenku_doc_operation_record where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+	<select id="recentOperation" parameterType="java.util.Map"
+		resultType="com.suime.library.dto.StudentDocumentDto">
+		SELECT * FROM
+		(
+		SELECT sd.id AS id, sd.document_id AS documentId,
+		sd.name AS name, sd.price AS price, sd.created_at AS
+		createdAt,
+		sd.updated_at AS updatedAt, file.page_count AS pageCount,
+		sd.mark_count AS markCount,
+		sd.comment_count AS
+		commentCount,sd.print_count AS printCount, sd.read_count AS readCount,
+		sd.ratings AS ratings,
+		sd.rating_count AS ratingCount, sd.file_key AS
+		fileKey, sd.file_name AS fileName, sd.permission AS permission,
+		sd.type AS type,
+		operation.created_at AS operatedAt,(case
+		operation.data_type WHEN 5 THEN operation.associated_id ELSE null end)
+		AS markRecordId
+		FROM wenku_doc_operation_record operation
+		JOIN
+		wenku_student_document sd ON operation.student_document_id = sd.id and
+		operation.data_type=1
+		LEFT JOIN wenji_file file ON file.id=sd.file_id
+		WHERE sd.student_id = #{studentId} and sd.actived=1
+		ORDER BY
+		operation.created_at DESC
+		) as doc
+		group by id order by operatedAt DESC
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+</mapper>

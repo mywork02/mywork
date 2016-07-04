@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.SendRecordMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache" />-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.SendRecord">
+		<id column="id" property="id"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+		<result column="actived" property="actived"/>
+		<result column="name" property="name"/>
+		<result column="associated_id" property="associatedId"/>
+		<result column="send_cache_id" property="sendCacheId"/>
+		<result column="receiver_id" property="receiverId"/>
+		<result column="sender_id" property="senderId"/>
+		<result column="is_accepted" property="isAccepted"/>
+		<result column="type" property="type"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, created_at, updated_at, actived, name, associated_id, send_cache_id, receiver_id, sender_id, is_accepted, type
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.SendRecord" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_doc_send_record
+		(
+		created_at, updated_at, actived, name, associated_id, send_cache_id, receiver_id, sender_id, is_accepted, type
+		)
+		values
+		(
+		#{createdAt, jdbcType=TIMESTAMP}, #{updatedAt, jdbcType=TIMESTAMP}, #{actived, jdbcType=TINYINT}, #{name, jdbcType=VARCHAR},
+		#{associatedId, jdbcType=BIGINT}, #{sendCacheId, jdbcType=BIGINT}, #{receiverId, jdbcType=BIGINT}, #{senderId, jdbcType=BIGINT},
+		#{isAccepted, jdbcType=TINYINT}, #{type, jdbcType=TINYINT}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_doc_send_record t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenku_doc_send_record<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+		<choose>
+			<when test="limit>0">
+				SELECT <include refid="sqlColumns" />
+				FROM wenku_doc_send_record t
+				<include refid="sqlWhere" />
+				limit #{offset},#{limit}
+			</when>
+			<otherwise>
+				SELECT <include refid="sqlColumns" />
+				FROM wenku_doc_send_record t
+				<include refid="sqlWhere" />
+			</otherwise>
+		</choose>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.SendRecord">
+		update wenku_doc_send_record
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>
+			<if test="associatedId != null">
+				associated_id = #{associatedId, jdbcType=BIGINT},
+			</if>
+			<if test="sendCacheId != null">
+				send_cache_id = #{sendCacheId, jdbcType=BIGINT},
+			</if>
+			<if test="receiverId != null">
+				receiver_id = #{receiverId, jdbcType=BIGINT},
+			</if>
+			<if test="senderId != null">
+				sender_id = #{senderId, jdbcType=BIGINT},
+			</if>
+			<if test="isAccepted != null">
+				is_accepted = #{isAccepted, jdbcType=TINYINT},
+			</if>
+			<if test="type != null">
+				type = #{type, jdbcType=TINYINT},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_doc_send_record where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+	<select id="receivedDocumentDto" parameterType="java.util.Map"
+			resultType="com.suime.library.dto.StudentDocumentDto">
+		SELECT sd.id AS id, sd.document_id AS documentId, sd.updated_at AS updatedAt, sd.name AS name, sd.price AS
+		price, sd.created_at AS createdAt, file.page_count AS pageCount, sd.mark_count AS markCount, sd.comment_count AS
+		commentCount,sd.print_count AS printCount,
+		sd.read_count AS readCount,sd.ratings AS ratings,sd.rating_count AS ratingCount, sd.file_key AS fileKey ,
+		sd.file_name AS fileName , sd.permission AS permission , sd.type AS type, sd.intro AS intro,
+		student.nick_name AS senderNickName, student.id AS  senderId,student.intro studentIntro,student.avatar
+		FROM wenku_student_document sd 
+		JOIN wenji_file file ON file.id=sd.file_id
+		left join wenji_student student ON sd.sender_id = student.id
+		<include refid="sqlWhere"/>
+		ORDER BY sd.updated_at DESC
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+	<select id="countReceivedDocument" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM wenku_student_document sd 
+		JOIN wenji_file file ON file.id=sd.file_id
+		left join wenji_student student ON sd.sender_id = student.id
+		<include refid="sqlWhere"/>
+	</select>
+
+	<select id="fetchPageDto" parameterType="java.util.Map" resultType="com.suime.library.dto.SendRecordDto">
+		SELECT send.id AS id, send.created_at AS  createdAt, send.updated_at AS updatedAt,
+		send.name AS name, send.type AS  type, student.nick_name AS senderNickName
+		FROM wenku_doc_send_record send
+		JOIN wenji_student student ON student.id=send.sender_id
+		<include refid="sqlWhere"/>
+		ORDER BY send.created_at DESC
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+</mapper>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.FileStateMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.FileState">
+		<id column="state" property="state"/>
+		<result column="annotation" property="annotation"/>
+		<result column="id" property="id"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		state, annotation, id
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.FileState" useGeneratedKeys="true" keyProperty="id">
+		insert into wenji_file_state
+		(
+		state, annotation
+		)
+		values
+		(
+		#{state, jdbcType=BIGINT}, #{annotation, jdbcType=CHAR}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenji_file_state t
+		WHERE t.id=#{id}
+		</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenji_file_state<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+	<choose>
+		<when test="limit>0">
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenji_file_state t
+			<include refid="sqlWhere" />
+			limit #{offset},#{limit}
+		</when>
+		<otherwise>
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenji_file_state t
+			<include refid="sqlWhere" />
+		</otherwise>
+	</choose>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.FileState">
+		update wenji_file_state
+		<set>
+			<if test="state != null">
+				state = #{state, jdbcType=BIGINT},
+			</if>
+			<if test="annotation != null">
+				annotation = #{annotation, jdbcType=CHAR},
+			</if>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenji_file_state where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+</mapper>

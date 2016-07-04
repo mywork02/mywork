@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.DirectoryMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.Directory">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="intro" property="intro"/>
+		<result column="student_id" property="studentId"/>
+		<result column="permission" property="permission"/>
+		<result column="source" property="source"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="actived" property="actived"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+	</resultMap>
+	
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, name, intro, student_id, permission, source, parent_id, actived, created_at, updated_at
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.Directory" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_doc_directory
+		(
+		name, intro, student_id, permission, source, parent_id, actived, created_at, updated_at
+		)
+		values
+		(
+		#{name, jdbcType=VARCHAR}, #{intro, jdbcType=VARCHAR}, #{studentId, jdbcType=BIGINT}, #{permission, jdbcType=TINYINT}, 
+		#{source, jdbcType=TINYINT}, #{parentId, jdbcType=BIGINT}, #{actived, jdbcType=TINYINT}, #{createdAt, jdbcType=TIMESTAMP}, 
+		#{updatedAt, jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_doc_directory t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenku_doc_directory<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> 
+		FROM wenku_doc_directory t
+		<include refid="sqlWhere" />
+		<if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+		<if test="limit>0">limit #{offset},#{limit}</if>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.Directory">
+		update wenku_doc_directory
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="name != null">
+				name = #{name, jdbcType=VARCHAR},
+			</if>
+			<if test="intro != null">
+				intro = #{intro, jdbcType=VARCHAR},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="permission != null">
+				permission = #{permission, jdbcType=TINYINT},
+			</if>
+			<if test="source != null">
+				source = #{source, jdbcType=TINYINT},
+			</if>
+			<if test="parentId != null">
+				parent_id = #{parentId, jdbcType=BIGINT},
+			</if>
+			<if test="actived != null">
+				actived = #{actived, jdbcType=TINYINT},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+				updated_at = now()
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_doc_directory where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+	<select id="fetchSubdirectoryIds" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT id
+		FROM wenku_doc_directory
+		WHERE parent_id = #{id,jdbcType=BIGINT} and actived=1
+	</select>
+
+	<update id="removeBatch" parameterType="java.util.Map">
+		UPDATE wenku_doc_directory
+		SET actived=0
+		<include refid="sqlWhere"/>
+	</update>
+
+	<select id="fetchDtoSearchByPage" parameterType="java.util.Map" resultType="com.suime.library.dto.DirectoryDto">
+		<choose>
+			<when test="limit>0">
+				SELECT id, name, parent_id AS parentId, student_id AS studentId, permission, source,intro, created_at AS createdAt, updated_at AS updatedAt, intro
+				FROM wenku_doc_directory t
+				<include refid="sqlWhere" />
+				limit #{offset},#{limit}
+			</when>
+			<otherwise>
+				SELECT id, name, parent_id AS parentId, student_id AS studentId, permission, source,intro, created_at AS createdAt, updated_at AS updatedAt, intro
+				FROM wenku_doc_directory t
+				<include refid="sqlWhere"/>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="fetchDtoSeachById" parameterType="java.util.Map" resultType="com.suime.library.dto.DirectoryDto">
+		SELECT t.id, t.name, t.intro, t.student_id AS studentId, t.permission, t.source,
+		t.parent_id AS parentId, t.actived, t.created_at as createdAt, t.updated_at as updatedAt,parent.name as parentName FROM wenku_doc_directory t
+		left join wenku_doc_directory parent on parent.id = t.parent_id
+		<include refid="sqlWhere"/>
+	</select>
+	
+<!-- 	<resultMap id="resultMaps" type="com.suime.library.dto.DirectoryDto">
+		<id column="id" property="id"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+		<result column="actived" property="actived"/>
+		<result column="name" property="name"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="student_id" property="studentId"/>
+		<result column="permission" property="permission"/>
+		<result column="source" property="source"/>
+		<result column="intro" property="intro"/>
+		<association property="studentDocumentList" column="id" select="selectChildByparent_id"/>
+	</resultMap> -->
+	
+	<!-- <select id="selectChildByparent_id" parameterType="String" resultType="com.suime.library.dto.StudentDocumentDto"> 
+ 		select * from wenku_student_document where directory_id=#{id}
+ 	</select> -->
+<!-- 	<select id="queryAll" resultMap="permResultMap"> -->
+<!-- 		select * from sys_permission where parent_id='0' order by sort asc -->
+<!-- 	</select> -->
+	
+    <!-- 批量把目录到某目录下 -->
+    <update id="updateDoresMove"  parameterType="java.util.Map">
+         update wenku_doc_directory  set parent_id = #{directoryId}
+       <include refid="sqlWhere"/>
+    </update>
+    <!-- 批量修改目录权限 -->
+    <update id="changePermission"  parameterType="java.util.Map">
+         update wenku_doc_directory  set permission = #{permission}
+       <include refid="sqlWhere"/>
+    </update>
+</mapper>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.StdocTagRelsMapper">
+	<!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+	<resultMap id="resultMap" type="com.suime.context.model.StdocTagRels">
+		<id column="id" property="id"/>
+		<result column="student_id" property="studentId"/>
+		<result column="stdoc_id" property="stdocId"/>
+		<result column="tag_id" property="tagId"/>
+		<result column="relevancy" property="relevancy"/>
+		<result column="created_at" property="createdAt"/>
+		<result column="updated_at" property="updatedAt"/>
+	</resultMap>
+
+	<sql id="sqlWhere">
+		<if test="conds!=null">
+			<trim prefix="WHERE" prefixOverrides="AND|OR">
+				<foreach collection="conds.conds" index="index" item="cond">
+					${cond.linkType}
+					<if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+					<if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+					<if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+					<if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+					<if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+					<if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+					<if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+					<if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+					<if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+					<if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+					<if test="cond.condType == 'IN'">${cond.param} IN
+						<foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				</foreach>
+			</trim>
+		</if>
+	</sql>
+
+	<sql id="sqlColumns">
+		id, student_id, stdoc_id, tag_id, relevancy, created_at, updated_at
+	</sql>
+
+	<insert id="save" parameterType="com.suime.context.model.StdocTagRels" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_stdoc_tag_rels
+		(
+		student_id, stdoc_id, tag_id, relevancy, created_at, updated_at
+		)
+		values
+		(
+		#{studentId, jdbcType=BIGINT}, #{stdocId, jdbcType=BIGINT}, #{tagId, jdbcType=BIGINT}, #{relevancy, jdbcType=DOUBLE},
+		#{createdAt, jdbcType=TIMESTAMP}, #{updatedAt, jdbcType=TIMESTAMP}
+		)
+	</insert>
+
+	<select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_stdoc_tag_rels t
+		WHERE t.id=#{id}
+	</select>
+
+	<select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT COUNT(1)  FROM wenku_stdoc_tag_rels<include refid="sqlWhere" />
+	</select>
+
+	<select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+	<choose>
+		<when test="limit>0">
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenku_stdoc_tag_rels t
+			<include refid="sqlWhere" />
+			limit #{offset},#{limit}
+		</when>
+		<otherwise>
+			SELECT <include refid="sqlColumns" /> 
+			FROM wenku_stdoc_tag_rels t
+			<include refid="sqlWhere" />
+		</otherwise>
+	</choose>
+	</select>
+
+	<update id="update" parameterType="com.suime.context.model.StdocTagRels">
+		update wenku_stdoc_tag_rels
+		<set>
+			<if test="id != null">
+				id = #{id, jdbcType=BIGINT},
+			</if>
+			<if test="studentId != null">
+				student_id = #{studentId, jdbcType=BIGINT},
+			</if>
+			<if test="stdocId != null">
+				stdoc_id = #{stdocId, jdbcType=BIGINT},
+			</if>
+			<if test="tagId != null">
+				tag_id = #{tagId, jdbcType=BIGINT},
+			</if>
+			<if test="relevancy != null">
+				relevancy = #{relevancy, jdbcType=DOUBLE},
+			</if>
+			<if test="createdAt != null">
+				created_at = #{createdAt, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedAt != null">
+				updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id=#{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_stdoc_tag_rels where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+	<delete id="removeRelsByTagIds" parameterType="java.util.Map">
+		delete from wenku_stdoc_tag_rels where stdoc_id=#{stdocId,jdbcType=BIGINT}
+		<if test="tagIds != null and tagIds.size() > 0">
+			AND tag_id IN
+			<foreach collection="tagIds" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</delete>
+
+	<select id="fetchByTagIds" parameterType="java.util.Map" resultMap="resultMap">
+		SELECT <include refid="sqlColumns" /> FROM wenku_stdoc_tag_rels t
+		WHERE stdoc_id=#{stdocId,jdbcType=BIGINT}
+		<if test="tagIds != null and tagIds.size() > 0">
+			AND tag_id NOT IN
+			<foreach collection="tagIds" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="fetchTagIdByStdocId" parameterType="java.util.Map" resultType="java.lang.Long">
+		SELECT tag_id FROM wenku_stdoc_tag_rels t
+		WHERE stdoc_id=#{stdocId,jdbcType=BIGINT}
+	</select>
+
+</mapper>

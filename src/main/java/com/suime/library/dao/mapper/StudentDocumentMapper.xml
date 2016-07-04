@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.StudentDocumentMapper">
+<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>
+    <resultMap id="resultMap" type="com.suime.context.model.StudentDocument">
+        <id column="id" property="id"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="actived" property="actived"/>
+        <result column="category_code" property="categoryCode"/>
+        <result column="file_key" property="fileKey"/>
+        <result column="file_name" property="fileName"/>
+        <result column="intro" property="intro"/>
+        <result column="name" property="name"/>
+        <result column="tags" property="tags"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="mark_count" property="markCount"/>
+        <result column="page_count" property="pageCount"/>
+        <result column="permission" property="permission"/>
+        <result column="preview" property="preview"/>
+        <result column="price" property="price"/>
+        <result column="print_count" property="printCount"/>
+        <result column="rating_count" property="ratingCount"/>
+        <result column="ratings" property="ratings"/>
+        <result column="read_count" property="readCount"/>
+        <result column="review_state" property="reviewState"/>
+        <result column="share_count" property="shareCount"/>
+        <result column="student_id" property="studentId"/>
+        <result column="student_nick_name" property="studentNickName"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="major_group_id" property="majorGroupId"/>
+        <result column="school_id" property="schoolId"/>
+        <result column="document_id" property="documentId"/>
+        <result column="file_id" property="fileId"/>
+        <result column="recommended" property="recommended"/>
+        <result column="source" property="source"/>
+        <result column="directory_id" property="directoryId"/>
+        <result column="thumbnail" property="thumbnail"/>
+        <result column="type" property="type"/>
+        <result column="stick" property="stick"/>
+    </resultMap>
+
+    <sql id="sqlWhere">
+        <if test="conds!=null">
+            <trim prefix="WHERE" prefixOverrides="AND|OR">
+                <foreach collection="conds.conds" index="index" item="cond">
+                    ${cond.linkType}
+                    <if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+                    <if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+                    <if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+                    <if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+                    <if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+                    <if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+                    <if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND
+                        #{cond.endValue}
+                    </if>
+                    <if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+                    <if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+                    <if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+                    <if test="cond.condType == 'IN'">${cond.param} IN
+                        <foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sqlColumns">
+        id, created_at, updated_at, actived, category_code, file_key, file_name, intro, name, tags, comment_count, mark_count, page_count, permission, preview, price, print_count, rating_count, ratings, read_count, review_state, share_count, student_id, student_nick_name, category_id, major_group_id, school_id, document_id, file_id, recommended, source, directory_id, thumbnail, type, stick
+    </sql>
+
+    <insert id="save" parameterType="com.suime.context.model.StudentDocument" useGeneratedKeys="true" keyProperty="id">
+		insert into wenku_student_document
+		(
+		created_at, updated_at, actived, category_code, file_key, file_name, intro, name, tags, comment_count, mark_count, page_count, permission, preview, price, print_count, rating_count, ratings, read_count, review_state, share_count, student_id, student_nick_name, category_id, major_group_id, school_id, document_id, file_id, recommended, source, directory_id, thumbnail, type, stick
+		)
+		values
+		(
+		#{createdAt, jdbcType=TIMESTAMP}, #{updatedAt, jdbcType=TIMESTAMP}, #{actived, jdbcType=TINYINT}, #{categoryCode, jdbcType=VARCHAR},
+		#{fileKey, jdbcType=VARCHAR}, #{fileName, jdbcType=VARCHAR}, #{intro, jdbcType=VARCHAR}, #{name, jdbcType=VARCHAR},
+		#{tags, jdbcType=VARCHAR}, #{commentCount, jdbcType=INTEGER}, #{markCount, jdbcType=INTEGER}, #{pageCount, jdbcType=INTEGER},
+		#{permission, jdbcType=TINYINT}, #{preview, jdbcType=TINYINT}, #{price, jdbcType=INTEGER}, #{printCount, jdbcType=INTEGER},
+		#{ratingCount, jdbcType=INTEGER}, #{ratings, jdbcType=INTEGER}, #{readCount, jdbcType=INTEGER}, #{reviewState, jdbcType=TINYINT},
+		#{shareCount, jdbcType=INTEGER}, #{studentId, jdbcType=BIGINT}, #{studentNickName, jdbcType=VARCHAR}, #{categoryId, jdbcType=BIGINT},
+		#{majorGroupId, jdbcType=BIGINT}, #{schoolId, jdbcType=BIGINT}, #{documentId, jdbcType=BIGINT}, #{fileId, jdbcType=BIGINT},
+		#{recommended, jdbcType=TINYINT}, #{source, jdbcType=TINYINT}, #{directoryId, jdbcType=BIGINT}, #{thumbnail, jdbcType=INTEGER},
+		#{type, jdbcType=TINYINT}, #{stick, jdbcType=TINYINT}
+		)
+	</insert>
+
+    <select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+        SELECT
+        <include refid="sqlColumns"/>
+        FROM wenku_student_document t
+        WHERE t.id=#{id}
+    </select>
+
+    <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM wenku_student_document
+        <include refid="sqlWhere"/>
+    </select>
+
+    <select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+        <choose>
+            <when test="limit>0">
+                SELECT
+                <include refid="sqlColumns"/>
+                FROM wenku_student_document t
+                <include refid="sqlWhere"/>
+                limit #{offset},#{limit}
+            </when>
+            <otherwise>
+                SELECT
+                <include refid="sqlColumns"/>
+                FROM wenku_student_document t
+                <include refid="sqlWhere"/>
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="update" parameterType="com.suime.context.model.StudentDocument">
+        update wenku_student_document
+        <set>
+            <if test="id != null">
+                id = #{id, jdbcType=BIGINT},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt, jdbcType=TIMESTAMP},
+            </if>
+            <if test="updatedAt != null">
+                updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+            </if>
+            <if test="actived != null">
+                actived = #{actived, jdbcType=TINYINT},
+            </if>
+            <if test="categoryCode != null">
+                category_code = #{categoryCode, jdbcType=VARCHAR},
+            </if>
+            <if test="fileKey != null">
+                file_key = #{fileKey, jdbcType=VARCHAR},
+            </if>
+            <if test="fileName != null">
+                file_name = #{fileName, jdbcType=VARCHAR},
+            </if>
+            <if test="intro != null">
+                intro = #{intro, jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                name = #{name, jdbcType=VARCHAR},
+            </if>
+            <if test="tags != null">
+                tags = #{tags, jdbcType=VARCHAR},
+            </if>
+            <if test="commentCount != null">
+                comment_count = #{commentCount, jdbcType=INTEGER},
+            </if>
+            <if test="markCount != null">
+                mark_count = #{markCount, jdbcType=INTEGER},
+            </if>
+            <if test="pageCount != null">
+                page_count = #{pageCount, jdbcType=INTEGER},
+            </if>
+            <if test="permission != null">
+                permission = #{permission, jdbcType=TINYINT},
+            </if>
+            <if test="preview != null">
+                preview = #{preview, jdbcType=TINYINT},
+            </if>
+            <if test="price != null">
+                price = #{price, jdbcType=INTEGER},
+            </if>
+            <if test="printCount != null">
+                print_count = #{printCount, jdbcType=INTEGER},
+            </if>
+            <if test="ratingCount != null">
+                rating_count = #{ratingCount, jdbcType=INTEGER},
+            </if>
+            <if test="ratings != null">
+                ratings = #{ratings, jdbcType=INTEGER},
+            </if>
+            <if test="readCount != null">
+                read_count = #{readCount, jdbcType=INTEGER},
+            </if>
+            <if test="reviewState != null">
+                review_state = #{reviewState, jdbcType=TINYINT},
+            </if>
+            <if test="shareCount != null">
+                share_count = #{shareCount, jdbcType=INTEGER},
+            </if>
+            <if test="studentId != null">
+                student_id = #{studentId, jdbcType=BIGINT},
+            </if>
+            <if test="studentNickName != null">
+                student_nick_name = #{studentNickName, jdbcType=VARCHAR},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId, jdbcType=BIGINT},
+            </if>
+            <if test="majorGroupId != null">
+                major_group_id = #{majorGroupId, jdbcType=BIGINT},
+            </if>
+            <if test="schoolId != null">
+                school_id = #{schoolId, jdbcType=BIGINT},
+            </if>
+            <if test="documentId != null">
+                document_id = #{documentId, jdbcType=BIGINT},
+            </if>
+            <if test="fileId != null">
+                file_id = #{fileId, jdbcType=BIGINT},
+            </if>
+            <if test="recommended != null">
+                recommended = #{recommended, jdbcType=TINYINT},
+            </if>
+            <if test="source != null">
+                source = #{source, jdbcType=TINYINT},
+            </if>
+            <if test="directoryId != null">
+                directory_id = #{directoryId, jdbcType=BIGINT},
+            </if>
+            <if test="thumbnail != null">
+                thumbnail = #{thumbnail, jdbcType=INTEGER},
+            </if>
+            <if test="type != null">
+                type = #{type, jdbcType=TINYINT},
+            </if>
+            <if test="stick != null">
+                stick = #{stick, jdbcType=TINYINT},
+            </if>
+        </set>
+        where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_student_document where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+    <select id="fetchDtoSearch" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id id, sd.name name, sd.price price, file.page_Count pageCount, sd.mark_Count markCount,
+        sd.comment_Count commentCount,sd.print_Count printCount, sd.read_Count readCount,sd.ratings ratings,
+        sd.rating_Count ratingCount, file.id fileId, sd.file_Key fileKey , sd.file_Name fileName,
+        sd.created_At createdAt, sd.updated_At AS updatedAt, sd.review_state AS reviewState, sd.source
+        <if test="studentId != null">
+            , markRecord.id markRecordId
+        </if>
+        <if test="schoolId != null">
+            , stdoc_weight(sd.school_id,school.city_id,0,#{schoolId,jdbcType=BIGINT},#{cityId,jdbcType=BIGINT},0) AS
+            weight
+        </if>
+        FROM
+        
+        <choose>
+            <when test="ids != null">
+		        (SELECT * FROM wenku_student_document
+	              <choose>
+	                  <when test="ids.size() > 0">
+	                      <foreach collection="ids" item="docId"
+	                               open="WHERE wenku_student_document.id in (" close=")" separator=",">
+	                          #{docId}
+	                      </foreach>
+	                  </when>
+	                  <otherwise>
+	                      <!-- This means no result! -->
+	                      WHERE 0 > 1
+	                  </otherwise>
+	              </choose>
+		        ) AS sd
+            </when>
+            <otherwise>
+            wenku_student_document sd
+            </otherwise>
+        </choose>
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        <if test="schoolId != null">
+            LEFT JOIN wenji_school school ON school.id=sd.school_id
+            LEFT JOIN wenji_city city ON city.id=school.city_id
+            LEFT JOIN wenji_province province ON province.id=city.province_id
+        </if>
+        <if test="studentId != null">
+            LEFT JOIN wenku_doc_mark_record markRecord ON (markRecord.student_document_id=sd.id) AND
+            (markRecord.actived=1) AND (markRecord.student_id=#{studentId,jdbcType=BIGINT})
+        </if>
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        <if test="searchText!=null">
+            AND (sd.name LIKE "%"#{searchText}"%" or sd.tags LIKE "%"#{searchText}"%")
+        </if>
+        <if test="tagsId!=null">
+            AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id=#{tagsId})
+        </if>
+        <choose>
+            <when test="schoolId != null">
+                <if test="sort!=null">
+                    ORDER BY weight DESC, ${sort.param} ${sort.type},sd.created_at DESC
+                </if>
+            </when>
+            <otherwise>
+                <if test="sort!=null">
+                    ORDER BY ${sort.param} ${sort.type},sd.created_at DESC
+                </if>
+            </otherwise>
+        </choose>
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+    
+    <select id="fetchDtoSearchDissertation" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id id, sd.name name, sd.price price, file.page_Count pageCount, sd.mark_Count markCount,
+        sd.comment_Count commentCount,sd.print_Count printCount, sd.read_Count readCount,sd.ratings ratings,
+        sd.rating_Count ratingCount, file.id fileId, sd.file_Key fileKey , sd.file_Name fileName,
+        sd.created_At createdAt, sd.updated_At AS updatedAt, sd.review_state AS reviewState, sd.source
+        <if test="schoolId != null">
+            , stdoc_weight(sd.school_id,school.city_id,0,#{schoolId,jdbcType=BIGINT},#{cityId,jdbcType=BIGINT},0) AS
+            weight
+        </if>
+        FROM  wenku_student_document sd
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        <if test="schoolId != null">
+            LEFT JOIN wenji_school school ON school.id=sd.school_id
+        </if>
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        <choose>
+        	 <when test="tagId!=null">
+        	 	AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id =#{tagId})
+        	 </when>
+        	 <otherwise>
+        	 AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id 
+        	 in (SELECT
+					id
+				FROM
+					wenku_doc_tags
+				WHERE
+					type = 3))
+        	 </otherwise>
+        </choose>
+        <choose>
+            <when test="schoolId != null">
+                <if test="sort!=null">
+                    ORDER BY weight DESC, ${sort.param} ${sort.type},sd.created_at DESC
+                </if>
+            </when>
+            <otherwise>
+                <if test="sort!=null">
+                    ORDER BY ${sort.param} ${sort.type},sd.created_at DESC
+                </if>
+            </otherwise>
+        </choose>
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+    <select id="fetchDtoSearchDissertationCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM
+        wenku_student_document sd
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        LEFT JOIN wenku_document document ON document.id=sd.document_id
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        <choose>
+        	 <when test="tagId!=null">
+        	 	AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id =#{tagId})
+        	 </when>
+        	 <otherwise>
+        	 AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id 
+        	 in (SELECT
+					id
+				FROM
+					wenku_doc_tags
+				WHERE
+					type = 3))
+        	 </otherwise>
+        </choose>
+    </select>
+
+    <select id="countSearch" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM
+        <choose>
+            <when test="ids != null">
+	            (SELECT * FROM wenku_student_document
+		            <choose>
+		                <when test="ids.size() > 0">
+		                    <foreach collection="ids" item="docId"
+		                             open="WHERE wenku_student_document.id in (" close=")" separator=",">
+		                        #{docId}
+		                    </foreach>
+		                </when>
+		                <otherwise>
+		                    <!-- This means no result! -->
+		                    WHERE 0 > 1
+		                </otherwise>
+		            </choose>
+		        ) AS sd
+            </when>
+            <otherwise>
+            wenku_student_document sd
+            </otherwise>
+        </choose>
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        LEFT JOIN wenku_document document ON document.id=sd.document_id
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        <if test="searchText!=null">
+            AND (sd.name LIKE "%"#{searchText}"%" or sd.tags LIKE "%"#{searchText}"%")
+        </if>
+        <if test="tagsId!=null">
+            AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id=#{tagsId})
+        </if>
+    </select>
+
+    <select id="personalDtoSearch" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id AS id, sd.document_id AS documentId, sd.name AS name, sd.price AS price, sd.created_at AS
+        createdAt, sd.updated_at AS updatedAt, file.page_count AS pageCount, sd.mark_count AS markCount,
+        sd.comment_count AS commentCount,sd.print_count AS printCount, sd.review_state AS reviewState,
+        sd.read_count AS readCount,sd.ratings AS ratings,sd.rating_count AS ratingCount, sd.file_key AS fileKey ,
+        sd.file_name AS fileName , sd.permission AS permission , sd.type AS type, sd.source
+        FROM wenku_student_document sd
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        <if test="tagsId!=null">
+            AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id=#{tagsId})
+        </if>
+        ORDER BY
+        <if test="sort!=null">${sort.param} ${sort.type},</if>
+        sd.updated_at DESC
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+    <select id="personalDtoWidthIntro" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id AS id, sd.document_id AS documentId, sd.updated_at AS updatedAt, sd.name AS name, sd.price AS
+        price, sd.created_at AS createdAt, file.page_count AS pageCount, sd.mark_count AS markCount, sd.comment_count AS
+        commentCount,sd.print_count AS printCount, sd.review_state AS reviewState,
+        sd.read_count AS readCount,sd.ratings AS ratings,sd.rating_count AS ratingCount, sd.file_key AS fileKey ,
+        sd.file_name AS fileName , sd.permission AS permission , sd.type AS type, sd.intro AS intro, sd.source
+        FROM wenku_student_document sd
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        <if test="tagsId!=null">
+            AND sd.id in (SELECT stdoc_id FROM wenku_stdoc_tag_rels WHERE tag_id=#{tagsId})
+        </if>
+        ORDER BY
+        <if test="sort!=null">${sort.param} ${sort.type},</if>
+        sd.updated_at DESC
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+    <select id="countWidthMarked" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM wenku_student_document sd
+        LEFT JOIN wenku_doc_mark_record mr ON mr.student_document_id=sd.id
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        AND ((sd.student_id=#{studentId} AND sd.actived=#{actived}) OR (mr.student_id=#{studentId} AND
+        mr.actived=#{actived}))
+    </select>
+
+    <select id="personalDtoWidthMarked" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id AS id, sd.document_id AS documentId, sd.name AS name, sd.price AS price, file.page_count AS
+        pageCount, sd.mark_count AS markCount, sd.comment_count AS commentCount, sd.print_count AS printCount,
+        sd.read_count AS readCount, sd.ratings AS ratings, sd.rating_count AS ratingCount,
+        sd.file_key AS fileKey, sd.file_name AS fileName, (case mr.actived when 1 then mr.id else null end ) AS
+        markRecordId, sd.student_id AS studentId , sd.permission AS permission, (case mr.actived when 1 then
+        mr.created_at else sd.created_at end ) AS createdAt, sd.updated_at AS updatedAt,
+        sd.review_state AS reviewState,sd.created_at AS documentCreatedAt, sd.source
+        FROM wenku_student_document sd
+        LEFT JOIN wenku_doc_mark_record mr ON mr.student_document_id=sd.id AND mr.student_id=#{studentId}
+        LEFT JOIN wenji_file file ON file.id=sd.file_id
+        <include refid="sqlWhere"/>
+        <if test="conds==null">WHERE (1=1)</if>
+        AND ((sd.student_id=#{studentId} AND sd.actived=#{actived}) OR (mr.student_id=#{studentId} AND
+        mr.actived=#{actived}))
+        <if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+    <update id="updateCountById" parameterType="java.util.Map">
+        UPDATE wenku_student_document
+        <set>
+            <choose>
+                <when test="countField == 'rating_count'">
+                    ratings=ratings+#{value, jdbcType=INTEGER},
+                    rating_count=rating_count+1,
+                </when>
+                <otherwise>
+                    ${countField}=${countField}+#{value, jdbcType=INTEGER},
+                </otherwise>
+            </choose>
+        </set>
+        WHERE id=#{id, jdbcType=BIGINT}
+    </update>
+
+    <update id="batchUpdateReviewState" parameterType="java.util.Map">
+        UPDATE wenku_student_document SET review_state=3
+        <include refid="sqlWhere"/>
+    </update>
+
+    <select id="countAdminSearch" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM wenku_student_document sd
+        LEFT JOIN wenku_doc_category ct on sd.category_id = ct.id
+        LEFT JOIN wenji_student student on student.id = sd.student_id
+        <include refid="sqlWhere"/>
+    </select>
+
+    <select id="adminSearchByPage" parameterType="java.util.Map" resultType="com.suime.library.dto.StudentDocumentDto">
+        SELECT sd.id AS id, sd.document_id AS documentId, sd.name AS name, TRIM(BOTH ',' FROM sd.tags) AS tags,
+        sd.review_state AS reviewState, sd.file_key AS fileKey, sd.ratings AS ratings, sd.rating_count AS ratingCount,
+        sd.mark_count AS markCount,sd.intro AS intro, sd.source,
+        sd.read_count AS readCount, sd.print_count AS printCount, student.nick_name AS studentNickName, sd.student_id AS
+        studentId, ct.id AS categoryId, ct.name AS categoryName, sd.created_at AS createdAt, sd.updated_at AS updatedAt 
+        FROM wenku_student_document sd
+        LEFT JOIN wenku_doc_category ct on sd.category_id = ct.id
+        LEFT JOIN wenji_student student on student.id = sd.student_id
+        <include refid="sqlWhere"/>
+        <if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+    <update id="removeByDirectory" parameterType="java.lang.Long">
+        UPDATE wenku_student_document SET actived = 0
+        WHERE ( directory_id=#{id,jdbcType=BIGINT} ) and ( actived = 1)
+    </update>
+    <!-- 批量更新文件到文件夹 -->
+    <update id="updatedocsdore"  parameterType="java.util.Map">
+         update wenku_student_document  set directory_id = #{directoryId}
+       <include refid="sqlWhere"/>
+    </update>
+    <!-- 批量修改文档权限 -->
+    <update id="changepermission"  parameterType="java.util.Map">
+         update wenku_student_document  set permission = #{permission}
+       <include refid="sqlWhere"/>
+    </update>
+</mapper>

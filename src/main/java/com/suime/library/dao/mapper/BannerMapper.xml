@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.suime.library.dao.BannerMapper">
+    <!--<cache flushInterval="300000" size="512" type="org.mybatis.caches.memcached.MemcachedCache"/>-->
+
+    <resultMap id="resultMap" type="com.suime.context.model.Banner">
+        <id column="id" property="id"/>
+        <result column="extra_key" property="extraKey"/>
+        <result column="extra" property="extra"/>
+        <result column="pic_url" property="picUrl"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="type" property="type"/>
+        <result column="version" property="version"/>
+        <result column="target" property="target"/>
+        <result column="actived" property="actived"/>
+    </resultMap>
+
+    <sql id="sqlWhere">
+        <if test="conds!=null">
+            <trim prefix="WHERE" prefixOverrides="AND|OR">
+                <foreach collection="conds.conds" index="index" item="cond">
+                    ${cond.linkType}
+                    <if test="cond.condType == 'EQUAL'">${cond.param} = #{cond.value}</if>
+                    <if test="cond.condType == 'NOTEQUAL'">${cond.param} &lt;&gt; #{cond.value}</if>
+                    <if test="cond.condType == 'GREATEQUAL'">${cond.param} &gt;= #{cond.value}</if>
+                    <if test="cond.condType == 'GREATTHAN'">${cond.param} &gt; #{cond.value}</if>
+                    <if test="cond.condType == 'LESSEQUAL'">${cond.param} &lt;= #{cond.value}</if>
+                    <if test="cond.condType == 'LESSTHAN'">${cond.param} &lt; #{cond.value}</if>
+                    <if test="cond.condType == 'BETWEEN'">${cond.param} BETWEEN #{cond.startValue} AND #{cond.endValue}</if>
+                    <if test="cond.condType == 'ISNULL'">${cond.param} IS NULL</if>
+                    <if test="cond.condType == 'NOTNULL'">${cond.param} IS NOT NULL</if>
+                    <if test="cond.condType == 'LIKE'">${cond.param} LIKE #{cond.value}</if>
+                    <if test="cond.condType == 'IN'">${cond.param} IN
+                        <foreach item="item" index="index" collection="cond.value" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </foreach>
+            </trim>
+        </if>
+    </sql>
+
+    <sql id="sqlColumns">
+        id, extra_key, extra, pic_url, created_at, updated_at, type, version, target, actived
+    </sql>
+
+    <insert id="save" parameterType="com.suime.context.model.Banner" useGeneratedKeys="true" keyProperty="id">
+        insert into wenku_banner
+        (
+        extra_key, extra, pic_url, created_at, updated_at, type, version, target, actived
+        )
+        values
+        (
+        #{extraKey, jdbcType=VARCHAR}, #{extra, jdbcType=VARCHAR}, #{picUrl, jdbcType=VARCHAR}, #{createdAt, jdbcType=TIMESTAMP},
+        #{updatedAt, jdbcType=TIMESTAMP}, #{type, jdbcType=VARCHAR}, #{version, jdbcType=VARCHAR}, #{target, jdbcType=INTEGER},
+        #{actived, jdbcType=TINYINT}
+        )
+    </insert>
+
+    <select id="fetchById" parameterType="java.lang.Long" resultMap="resultMap">
+        SELECT <include refid="sqlColumns" /> FROM wenku_banner t
+        WHERE t.id=#{id}
+    </select>
+
+    <select id="count" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT COUNT(1)  FROM wenku_banner<include refid="sqlWhere" />
+    </select>
+
+    <select id="fetchSearchByPage" parameterType="java.util.Map" resultMap="resultMap">
+        SELECT <include refid="sqlColumns" />
+        FROM wenku_banner t
+        <include refid="sqlWhere" />
+        <if test="sort!=null">ORDER BY ${sort.param} ${sort.type}</if>
+        <if test="limit>0">limit #{offset},#{limit}</if>
+    </select>
+
+    <update id="update" parameterType="com.suime.context.model.Banner">
+        update wenku_banner
+        <set>
+            <if test="id != null">
+                id = #{id, jdbcType=BIGINT},
+            </if>
+            <if test="extraKey != null">
+                extra_key = #{extraKey, jdbcType=VARCHAR},
+            </if>
+            <if test="extra != null">
+                extra = #{extra, jdbcType=VARCHAR},
+            </if>
+            <if test="picUrl != null">
+                pic_url = #{picUrl, jdbcType=VARCHAR},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt, jdbcType=TIMESTAMP},
+            </if>
+            <if test="updatedAt != null">
+                updated_at = #{updatedAt, jdbcType=TIMESTAMP},
+            </if>
+            <if test="type != null">
+                type = #{type, jdbcType=VARCHAR},
+            </if>
+            <if test="version != null">
+                version = #{version, jdbcType=VARCHAR},
+            </if>
+            <if test="target != null">
+                target = #{target, jdbcType=INTEGER},
+            </if>
+            <if test="actived != null">
+                actived = #{actived, jdbcType=TINYINT},
+            </if>
+        </set>
+        where id=#{id,jdbcType=BIGINT}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+		delete from wenku_banner where id=#{id,jdbcType=BIGINT}
+	</delete>
+
+    <select id="fetchDtoSearchByPage" parameterType="java.util.Map" resultType="com.suime.library.dto.BannerDto">
+        <choose>
+            <when test="limit>0">
+                SELECT id AS id, extra_key AS extraKey, extra as extra, pic_url as picUrl, created_at AS createdAt,
+                updated_at AS updatedAt, type AS type, version AS version
+                FROM wenku_banner t
+                <include refid="sqlWhere"/>
+                <if test="sort != null">
+                    ORDER BY ${sort.param} ${sort.type}
+                </if>
+                limit #{offset},#{limit}
+            </when>
+            <otherwise>
+                SELECT id AS id, extra_key AS extraKey, extra as extra, pic_url as picUrl, created_at AS createdAt,
+                updated_at AS updatedAt, type AS type, version AS version
+                FROM wenku_banner t
+                <include refid="sqlWhere"/>
+                <if test="sort != null">
+                    ORDER BY ${sort.param} ${sort.type}
+                </if>
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>
