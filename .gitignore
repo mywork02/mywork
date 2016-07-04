@@ -1,12 +1,28 @@
+### Java template
 *.class
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
 
 # Package Files #
 *.jar
 *.war
 *.ear
+/target/
+.classpath
+/bin/
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+# Intellij #
+suime-library.iml
+.idea/
+
+# Paoding #
+data/dic/.compiled/
+
+# Eclipse project files
+.project
+*.settings/
+.settings
+.settings/
+.settings/org.eclipse.wst.common.component
+org.eclipse*
+.externalToolBuilders
+src/main/java/com/suime/library/remote/
+src/main/webapp/404.html
