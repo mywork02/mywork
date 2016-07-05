@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.suime.library.dto.PointDto;
-import me.sui.context.model.StudentPointLog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,13 +30,13 @@ import com.suime.library.dao.CommentMapper;
 import com.suime.library.dao.StudentDocumentMapper;
 import com.suime.library.dao.StudentMapper;
 import com.suime.library.dto.CommentDto;
+import com.suime.library.dto.PointDto;
 import com.suime.library.dto.pack.CommentBean;
 import com.suime.library.dto.pack.MessageBean;
 import com.suime.library.error.CommentErrors;
 import com.suime.library.manager.MessageManager;
 import com.suime.library.service.CommentService;
 
-import me.sui.context.support.PointTypeEnum;
 import me.sui.user.remote.service.StudentPointRemoteService;
 
 /**
@@ -147,19 +145,11 @@ public class CommentServiceImpl extends GenericServiceImpl<Comment> implements C
         /**
          * 添加评论积分
          */
-        StudentPointLog studentPointLog = this.studentPointRemoteService.addStudentPointLog(PointTypeEnum.REPLY, studentId, comment.getId(), null);
         Integer avliablePoint = student.getAvliablePoint();
         if (avliablePoint == null) {
             avliablePoint = 0;
         }
         PointDto pointDto = new PointDto();
-        if (studentPointLog != null) {
-            pointDto.setPoint(studentPointLog.getChangePoint());
-            avliablePoint += studentPointLog.getChangePoint();
-        } else {
-            pointDto.setPoint(0);
-            pointDto.setPointMemo(SpringContext.getText("point.reply.no_point.memo"));
-        }
         pointDto.setCurrentPoint(avliablePoint.longValue());
         CommentDto dto = new CommentDto(comment);
         dto.setPoint(pointDto);

@@ -19,8 +19,9 @@
     </bean>
 
     <bean id="memcachedClient" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
-        <property name="servers" value="${cache.server}"/>
+        <property name="servers" value="${ocs.server}"/>
         <property name="protocol" value="BINARY"/>
+        <property name="authDescriptor" ref="authDescriptor" />
         <property name="transcoder">
             <bean class="net.spy.memcached.transcoders.SerializingTranscoder">
                 <property name="compressionThreshold" value="1024"/>

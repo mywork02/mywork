@@ -99,7 +99,6 @@ public class SendDocRestController extends AbstractRestController {
 		// req.setDesc(sendRecordV2Bean.getName());// 文件名或者目录名称
 		req.setDocIds(sendRecordV2Bean.getDocIds());// 文件ID
 		req.setDirIds(sendRecordV2Bean.getDirIds());// 目录ID
-		req.setReceiverStudentIds(sendRecordV2Bean.getReceiverStudentIds());// 发送者的学生ID
 		req.setSenderStudentId(studentId);// 接受者的学生ID
 		req.setRequestTime(DateUtil.getTime().toString());
 		req.setSourceCode("wenku");

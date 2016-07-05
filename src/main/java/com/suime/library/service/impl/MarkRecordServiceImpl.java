@@ -1,7 +1,6 @@
 package com.suime.library.service.impl;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +42,6 @@ import com.suime.library.manager.CollectedWorksManager;
 import com.suime.library.manager.MessageManager;
 import com.suime.library.service.MarkRecordService;
 
-import me.sui.context.model.StudentPointLog;
-import me.sui.context.support.PointTypeEnum;
 import me.sui.user.remote.service.StudentPointRemoteService;
 
 /**
@@ -234,23 +231,7 @@ public class MarkRecordServiceImpl extends GenericServiceImpl<MarkRecord> implem
 	 * @return point dto
 	 */
 	private PointDto addStudentPointLog(MarkRecord markRecord, Student student) {
-		/**
-		 * 添加收藏积分
-		 */
-		StudentPointLog studentPointLog = studentPointRemoteService.addStudentPointLog(PointTypeEnum.MARK, markRecord.getStudentId(), markRecord.getId(), null);
-		Integer avliablePoint = student.getAvliablePoint();
-		if (avliablePoint == null) {
-			avliablePoint = 0;
-		}
 		PointDto pointDto = new PointDto();
-		if (studentPointLog != null) {
-			pointDto.setPoint(studentPointLog.getChangePoint());
-			avliablePoint += studentPointLog.getChangePoint();
-		} else {
-			pointDto.setPoint(0);
-			pointDto.setPointMemo(SpringContext.getText("point.mark.no_point.memo"));
-		}
-		pointDto.setCurrentPoint(avliablePoint.longValue());
 		return pointDto;
 	}
 

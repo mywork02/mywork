@@ -40,6 +40,8 @@ public class HessianAccessTest {
         List<Long> dirIds = new ArrayList<Long>();
         dirIds.add(2L);
         req.setDirIds(dirIds);
+		List<Long> receiverStudentIds = new ArrayList<Long>();
+		receiverStudentIds.add(1L);
         req.setSenderStudentId(2L);
         docService.pushDoc(req);
     }
